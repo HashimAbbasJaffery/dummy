@@ -179,6 +179,14 @@
                         <a class="btn" href="{{ asset('storage/' . $application->education_file) }}" target="_blank">Download</a>
                     </p>
 
+                    
+                    @if($application->questionnaire)
+                        <p>
+                            <strong>View Questionnaires:</strong>
+                            <a class="btn" href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}">View</a>
+                        </p>
+                    @endif
+
                     @if($application->cover_letter)
                         <div class="cover-letter">
                             <strong>Cover Letter:</strong><br>

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\QuestionnaireController;
 use App\Http\Controllers\Auth\CompanyLoginController;
 
 
@@ -9,6 +10,9 @@ use App\Http\Controllers\Auth\CompanyLoginController;
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{project}/get', [JobController::class, 'show'])->name('jobs.show');
 Route::post('/jobs/{id}/apply', [JobController::class, 'apply'])->name('jobs.apply');
+
+Route::get("/questionnaire/{application:id}", [JobController::class, "questionnaire"])->name("job.questionnaire");
+Route::post("/questionnaire/{application:id}/create", [QuestionnaireController::class, "store"])->name("candidate.questionnaire.answers");
 
 // COMPANY LOGIN
 Route::get('/company/login', [CompanyLoginController::class, 'showLoginForm'])->name('company.login');
@@ -28,6 +32,8 @@ Route::prefix('company')->middleware(['auth:company'])->name('company.')->group(
 
     // View job applications
     Route::get('/jobs/{job}/applications', [App\Http\Controllers\Company\ApplicationController::class, 'index'])->name('jobs.applications');
+
+    Route::get("/questionnaire/{application:id}", [App\Http\Controllers\Company\QuestionnaireController::class, "get"])->name("job.questionnaire");
 
 });
 

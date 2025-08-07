@@ -121,6 +121,12 @@
             <input type="text" id="skills" name="skills" placeholder="e.g. Laravel, Vue.js, REST API" required />
         </div>
 
+        
+        <div>
+            <label for="total_vacancies">Total Vacancies</label>
+            <input type="number" id="total_vacancies" name="total_vacancies" placeholder="1 Vacancy" required />
+        </div>
+
         <div>
             <label for="threshold">Minimum Match Threshold (0.0 - 1.0)</label>
             <input type="number" step="0.01" min="0" max="1" id="threshold" name="threshold" required />

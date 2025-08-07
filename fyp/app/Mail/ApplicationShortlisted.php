@@ -12,11 +12,13 @@ class ApplicationShortlisted extends Mailable
 
     public $name;
     public $jobTitle;
+    public $application;
 
-    public function __construct($name, $jobTitle)
+    public function __construct($name, $jobTitle, $application)
     {
         $this->name = $name;
         $this->jobTitle = $jobTitle;
+        $this->application = $application;
     }
 
     public function build()

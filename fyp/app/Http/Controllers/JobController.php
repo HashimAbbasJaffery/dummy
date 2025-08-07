@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Application;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApplicationShortlisted;
+use App\Mail\ApplicationRejected;
 
 use Illuminate\Support\Facades\Http;
 
@@ -66,7 +67,7 @@ class JobController extends Controller
         $result = $response->json();
        
         // Save the application with classification results
-        Application::create([
+        $application = Application::create([
             'job_id' => $id,
             'name' => $request->name,
             'email' => $request->email,
@@ -78,9 +79,20 @@ class JobController extends Controller
         ]);
 
         if (($result['label'] ?? '') === 'Recommended') {
-            Mail::to($request->email)->send(new ApplicationShortlisted($request->name, $job->title));
+            Mail::to($request->email)->send(new ApplicationShortlisted($request->name, $job->title, $application));
+        } else {
+            Mail::to($request->email)->send(new ApplicationRejected($request->name, $job->title));
         }
 
         return back()->with('success', 'Application submitted successfully! Classification: ' . ($result['label'] ?? 'Unknown'));
+    }
+
+    public function questionnaire(Application $application) {
+        $candidate_score = $application->classification_score;
+        $min_required_score = $application->job->threshold;
+        
+        if($candidate_score >= $min_required_score) {
+            return view("questionnaire.view", compact("application"));
+        }
     }
 }

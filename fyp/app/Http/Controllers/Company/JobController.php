@@ -22,6 +22,7 @@ class JobController extends Controller
             'description' => 'required|string',
             'skills' => 'required|string',
             'threshold' => 'required|numeric|between:0,1',
+            'total_vacancies' => 'required|numeric'
         ]);
 
         auth('company')->user()->jobs()->create([
@@ -29,6 +30,7 @@ class JobController extends Controller
             'description' => request()->description,
             'skills' => request()->skills,
             'threshold' => request()->threshold,
+            'total_vacancies' => request()->total_vacancies
         ]);
 
         return redirect()->route('company.dashboard')->with('success', 'Job created successfully!');
