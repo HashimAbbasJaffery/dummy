@@ -11,7 +11,7 @@ class ApplicationController extends Controller
 {
     public function index($id) {
         $job = Project::find($id);
-        $applications = $job->applications;
+        $applications = $job->applications()->orderBy("classification_score", "desc")->get();
         return view("company.applications", compact("applications", "job"));
     }
 }

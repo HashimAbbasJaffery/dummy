@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Company\InterviewController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\QuestionnaireController;
@@ -35,5 +36,6 @@ Route::prefix('company')->middleware(['auth:company'])->name('company.')->group(
 
     Route::get("/questionnaire/{application:id}", [App\Http\Controllers\Company\QuestionnaireController::class, "get"])->name("job.questionnaire");
 
+    Route::post("/application/{application}/interview", [InterviewController::class, "interview"])->name("candidate.interview");
 });
 

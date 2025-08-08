@@ -6,6 +6,8 @@
     <title>Applications - {{ $job->title }}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <style>
         body {
@@ -68,6 +70,7 @@
             border-radius: 1.25rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 6px 16px rgba(191, 219, 254, 0.2);
+            position: relative;
         }
 
         .app-header {
@@ -107,6 +110,8 @@
             border-radius: 0.5rem;
             text-decoration: none;
             font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
         }
 
         .btn:hover {
@@ -137,6 +142,75 @@
             display: block;
         }
 
+        /* Actions dropdown */
+        .actions-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .actions-button {
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.9rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .actions-button:hover {
+            background-color: #2563eb;
+        }
+
+        .actions-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            min-width: 180px;
+            z-index: 100;
+        }
+
+        .actions-menu.show {
+            display: block;
+        }
+
+        .actions-menu a, .actions-menu button {
+            display: block;
+            padding: 0.5rem 1rem;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #1e293b;
+            text-decoration: none;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .actions-menu a:hover, .actions-menu button:hover {
+            background-color: #e0e7ff;
+            color: #1e40af;
+        }
+
+        /* Interview Invitation Sent Badge */
+        .invitation-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            margin: 0.25rem 1rem 0 0;
+            background-color: #34d399; /* green-400 */
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            user-select: none;
+        }
+
         @media (max-width: 640px) {
             .app-header {
                 flex-direction: column;
@@ -148,7 +222,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="app">
     <h1>📄 Applications for: {{ $job->title }}</h1>
 
     <div class="tabs">
@@ -162,30 +236,41 @@
         @endphp
 
         @forelse($shortlisted as $application)
+        @php
+            $medals = ['🏅', '🥈', '🥉'];
+        @endphp
             <div class="app-card">
                 <div class="app-header">
-                    <div class="app-name">{{ $application->name }}</div>
+                    <div class="app-name">{{ ($loop->index < 3) ? $medals[$loop->index] . ' ' : '' }}{{ $application->name }}</div>
                     <div class="app-date">Applied on {{ $application->created_at->format('M d, Y') }}</div>
                 </div>
 
                 <div class="app-body">
                     <p><strong>Email:</strong> {{ $application->email }}</p>
-                    <p>
-                        <strong>Resume:</strong>
-                        <a class="btn" href="{{ asset('storage/' . $application->resume) }}" target="_blank">Download</a>
-                    </p>
-                    <p>
-                        <strong>Education Certificate:</strong>
-                        <a class="btn" href="{{ asset('storage/' . $application->education_file) }}" target="_blank">Download</a>
-                    </p>
 
-                    
-                    @if($application->questionnaire)
-                        <p>
-                            <strong>View Questionnaires:</strong>
-                            <a class="btn" href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}">View</a>
-                        </p>
+                    @if($application->questionnaire && $application->interview_invitation)
+                        <div class="invitation-badge" role="status" aria-label="Interview Invitation Sent">
+                            📧 Interview Invitation Sent
+                        </div>
                     @endif
+
+                    <div class="actions-dropdown">
+                        <button class="actions-button" aria-haspopup="true" aria-expanded="false">
+                            Actions ▾
+                        </button>
+                        <div class="actions-menu" role="menu">
+                            <a href="{{ asset('storage/' . $application->resume) }}" target="_blank" role="menuitem">Download Resume</a>
+                            <a href="{{ asset('storage/' . $application->education_file) }}" target="_blank" role="menuitem">Download Education Certificate</a>
+                            @if($application->questionnaire)
+                                <a href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}" role="menuitem">View Questionnaire</a>
+                                @unless($application->interview_invitation)
+                                    <button type="button" class="send-invite-btn" data-application-id="{{ $application->id }}" role="menuitem">
+                                        Send Interview Invitation
+                                    </button>
+                                @endunless
+                            @endif
+                        </div>
+                    </div>
 
                     @if($application->cover_letter)
                         <div class="cover-letter">
@@ -214,14 +299,19 @@
 
                 <div class="app-body">
                     <p><strong>Email:</strong> {{ $application->email }}</p>
-                    <p>
-                        <strong>Resume:</strong>
-                        <a class="btn" href="{{ asset('storage/' . $application->resume) }}" target="_blank">Download</a>
-                    </p>
-                    <p>
-                        <strong>Education Certificate:</strong>
-                        <a class="btn" href="{{ asset('storage/' . $application->education_file) }}" target="_blank">Download</a>
-                    </p>
+
+                    <div class="actions-dropdown">
+                        <button class="actions-button" aria-haspopup="true" aria-expanded="false">
+                            Actions ▾
+                        </button>
+                        <div class="actions-menu" role="menu">
+                            <a href="{{ asset('storage/' . $application->resume) }}" target="_blank" role="menuitem">Download Resume</a>
+                            <a href="{{ asset('storage/' . $application->education_file) }}" target="_blank" role="menuitem">Download Education Certificate</a>
+                            @if($application->questionnaire)
+                            <a href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}" role="menuitem">View Questionnaire</a>
+                            @endif
+                        </div>
+                    </div>
 
                     @if($application->cover_letter)
                         <div class="cover-letter">
@@ -238,6 +328,7 @@
 </div>
 
 <script>
+    // Tabs switching
     const tabs = document.querySelectorAll('.tab');
     const contents = document.querySelectorAll('[data-tab-content]');
 
@@ -249,6 +340,79 @@
             tab.classList.add('active');
             const target = tab.getAttribute('data-tab');
             document.querySelector(`[data-tab-content="${target}"]`).classList.add('active');
+        });
+    });
+
+    // Actions dropdown toggle
+    document.querySelectorAll('.actions-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllDropdowns();
+
+            const menu = button.nextElementSibling;
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', !expanded);
+            if (!expanded) {
+                menu.classList.add('show');
+            } else {
+                menu.classList.remove('show');
+            }
+        });
+    });
+
+    // Close all dropdowns on clicking outside
+    function closeAllDropdowns() {
+        document.querySelectorAll('.actions-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+            const btn = menu.previousElementSibling;
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+    }
+    document.addEventListener('click', closeAllDropdowns);
+
+    // Send Interview Invitation button handler inside dropdown
+    document.querySelectorAll('.send-invite-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const applicationId = button.dataset.applicationId;
+
+            Swal.fire({
+                title: 'Send Interview Invitation',
+                html:
+                    `<input type="date" id="interview_date" class="swal2-input" placeholder="Interview Date" required>` +
+                    `<input type="time" id="interview_time" class="swal2-input" placeholder="Interview Time" required>` +
+                    `<input type="text" id="location" class="swal2-input" placeholder="Location" required>`,
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    const date = Swal.getPopup().querySelector('#interview_date').value;
+                    const time = Swal.getPopup().querySelector('#interview_time').value;
+                    const location = Swal.getPopup().querySelector('#location').value;
+
+                    if (!date || !time || !location) {
+                        Swal.showValidationMessage(`Please enter date, time, and location`);
+                    }
+                    return { date, time, location };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = {
+                        interview_date: result.value.date,
+                        interview_time: result.value.time,
+                        location: result.value.location,
+                        _token: '{{ csrf_token() }}'
+                    };
+
+                    axios.post(`/company/application/${applicationId}/interview`, data)
+                        .then(() => {
+                            Swal.fire('Success!', 'Interview invitation sent.', 'success').then(() => {
+                                location.reload();
+                            });
+                        })
+                        .catch(() => {
+                            Swal.fire('Error!', 'Failed to send invitation.', 'error');
+                        });
+                }
+            });
         });
     });
 </script>
