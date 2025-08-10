@@ -84,6 +84,10 @@
             font-size: 1.25rem;
             font-weight: 600;
             color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
         }
 
         .app-date {
@@ -172,7 +176,7 @@
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            min-width: 180px;
+            min-width: 220px;
             z-index: 100;
         }
 
@@ -202,13 +206,32 @@
         .invitation-badge {
             display: inline-block;
             padding: 0.25rem 0.6rem;
-            margin: 0.25rem 1rem 0 0;
+            margin: 0.25rem 0 0 0;
             background-color: #34d399; /* green-400 */
             color: white;
             font-weight: 600;
             border-radius: 0.5rem;
             font-size: 0.85rem;
             user-select: none;
+        }
+
+        /* Hired Badge */
+        .hired-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            margin: 0.25rem 0 0 0;
+            background-color: #f59e0b; /* amber-500 */
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            user-select: none;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
         }
 
         @media (max-width: 640px) {
@@ -236,23 +259,30 @@
         @endphp
 
         @forelse($shortlisted as $application)
-        @php
-            $medals = ['🏅', '🥈', '🥉'];
-        @endphp
-            <div class="app-card">
+            @php $medals = ['🏅', '🥈', '🥉']; @endphp
+            <div class="app-card" data-application-card="{{ $application->id }}">
                 <div class="app-header">
-                    <div class="app-name">{{ ($loop->index < 3) ? $medals[$loop->index] . ' ' : '' }}{{ $application->name }}</div>
+                    <div class="app-name">
+                        {{ ($loop->index < 3) ? $medals[$loop->index] . ' ' : '' }}{{ $application->name }}
+                        <span class="badge-row">
+                            @if($application->questionnaire && $application->interview_invitation)
+                                <span class="invitation-badge" role="status" aria-label="Interview Invitation Sent">
+                                    📧 Interview Invitation Sent
+                                </span>
+                            @endif
+
+                            @if($application->is_hired)
+                                <span class="hired-badge" role="status" aria-label="Candidate Hired">
+                                    🎉 Hired
+                                </span>
+                            @endif
+                        </span>
+                    </div>
                     <div class="app-date">Applied on {{ $application->created_at->format('M d, Y') }}</div>
                 </div>
 
                 <div class="app-body">
                     <p><strong>Email:</strong> {{ $application->email }}</p>
-
-                    @if($application->questionnaire && $application->interview_invitation)
-                        <div class="invitation-badge" role="status" aria-label="Interview Invitation Sent">
-                            📧 Interview Invitation Sent
-                        </div>
-                    @endif
 
                     <div class="actions-dropdown">
                         <button class="actions-button" aria-haspopup="true" aria-expanded="false">
@@ -261,6 +291,20 @@
                         <div class="actions-menu" role="menu">
                             <a href="{{ asset('storage/' . $application->resume) }}" target="_blank" role="menuitem">Download Resume</a>
                             <a href="{{ asset('storage/' . $application->education_file) }}" target="_blank" role="menuitem">Download Education Certificate</a>
+
+                            <!-- Hire candidate button (AJAX first, fallback to link) -->
+                            @if(!$application->is_hired)
+                                <button
+                                    type="button"
+                                    class="hire-btn"
+                                    data-hire-url="{{ route('company.candidate.hire', [ 'application' => $application->id ]) }}"
+                                    data-application-id="{{ $application->id }}"
+                                    role="menuitem"
+                                >
+                                    Hire candidate
+                                </button>
+                            @endif
+
                             @if($application->questionnaire)
                                 <a href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}" role="menuitem">View Questionnaire</a>
                                 @unless($application->interview_invitation)
@@ -291,7 +335,7 @@
         @endphp
 
         @forelse($rejected as $application)
-            <div class="app-card">
+            <div class="app-card" data-application-card="{{ $application->id }}">
                 <div class="app-header">
                     <div class="app-name">{{ $application->name }}</div>
                     <div class="app-date">Applied on {{ $application->created_at->format('M d, Y') }}</div>
@@ -305,10 +349,10 @@
                             Actions ▾
                         </button>
                         <div class="actions-menu" role="menu">
-                            <a href="{{ asset('storage/' . $application->resume) }}" target="_blank" role="menuitem">Download Resume</a>
+                            <a href="{{ asset('storage/' . $application->resume) }}" target="_blank" role="menuitem">Downlad Resume</a>
                             <a href="{{ asset('storage/' . $application->education_file) }}" target="_blank" role="menuitem">Download Education Certificate</a>
                             @if($application->questionnaire)
-                            <a href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}" role="menuitem">View Questionnaire</a>
+                                <a href="{{ route('company.job.questionnaire', ['application' => $application->id]) }}" role="menuitem">View Questionnaire</a>
                             @endif
                         </div>
                     </div>
@@ -405,7 +449,18 @@
                     axios.post(`/company/application/${applicationId}/interview`, data)
                         .then(() => {
                             Swal.fire('Success!', 'Interview invitation sent.', 'success').then(() => {
-                                location.reload();
+                                // Update UI: add "Interview Invitation Sent" badge if not shown
+                                const card = document.querySelector(`[data-application-card="${applicationId}"]`);
+                                if (card && !card.querySelector('.invitation-badge')) {
+                                    const badgeRow = card.querySelector('.badge-row') || card.querySelector('.app-name');
+                                    const span = document.createElement('span');
+                                    span.className = 'invitation-badge';
+                                    span.setAttribute('role', 'status');
+                                    span.setAttribute('aria-label', 'Interview Invitation Sent');
+                                    span.textContent = '📧 Interview Invitation Sent';
+                                    badgeRow.appendChild(span);
+                                }
+                                closeAllDropdowns();
                             });
                         })
                         .catch(() => {
@@ -413,6 +468,47 @@
                         });
                 }
             });
+        });
+    });
+
+    // Hire candidate (AJAX first; fallback to opening link)
+    document.querySelectorAll('.hire-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const url = button.dataset.hireUrl;
+            const applicationId = button.dataset.applicationId;
+
+            const confirm = await Swal.fire({
+                title: 'Hire candidate?',
+                text: 'This will mark the candidate as hired and send out the hired email (if configured).',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Hire',
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                await axios.post(url, { _token: '{{ csrf_token() }}' });
+
+                Swal.fire('Hired!', 'Candidate has been marked as hired.', 'success').then(() => {
+                    // Update UI: add Hired badge
+                    const card = document.querySelector(`[data-application-card="${applicationId}"]`);
+                    if (card && !card.querySelector('.hired-badge')) {
+                        const badgeRow = card.querySelector('.badge-row') || card.querySelector('.app-name');
+                        const span = document.createElement('span');
+                        span.className = 'hired-badge';
+                        span.setAttribute('role', 'status');
+                        span.setAttribute('aria-label', 'Candidate Hired');
+                        span.textContent = '🎉 Hired';
+                        badgeRow.appendChild(span);
+                    }
+                    closeAllDropdowns();
+                });
+            } catch (err) {
+                // If API fails, try opening the route normally so your server can handle it
+                window.open(url, '_blank');
+            }
         });
     });
 </script>

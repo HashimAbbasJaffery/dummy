@@ -65,7 +65,7 @@ class JobController extends Controller
         }
 
         $result = $response->json();
-       
+
         // Save the application with classification results
         $application = Application::create([
             'job_id' => $id,
@@ -88,11 +88,12 @@ class JobController extends Controller
     }
 
     public function questionnaire(Application $application) {
+        $answers = $application->questionnaire->answers ?? [];
         $candidate_score = $application->classification_score;
         $min_required_score = $application->job->threshold;
-        
+
         if($candidate_score >= $min_required_score) {
-            return view("questionnaire.view", compact("application"));
+            return view("questionnaire.view", compact("application", "answers"));
         }
     }
 }

@@ -7,82 +7,98 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
 <style>
     /* Use your original CSS exactly */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
         font-family: 'Inter', sans-serif;
         background: linear-gradient(135deg, #0f172a, #1e293b);
         color: #f3f4f6;
         padding: 2rem 1rem;
     }
-    .container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
+    .container { max-width: 1000px; margin: 0 auto; }
     .form-section {
         background: rgba(17, 24, 39, 0.8);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 1.5rem;
-        padding: 2rem;
-        margin-bottom: 3rem;
+        padding: 2rem; margin-bottom: 3rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         backdrop-filter: blur(18px);
     }
     .form-section h2 {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #a5b4fc;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 0 10px #6366f1;
+        font-size: 2rem; font-weight: 800; color: #a5b4fc;
+        margin-bottom: 1.5rem; text-shadow: 0 0 10px #6366f1;
     }
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-    label {
-        font-weight: 600;
-        color: #d1d5db;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
+    form { display: flex; flex-direction: column; gap: 2rem; }
+    label { font-weight: 600; color: #d1d5db; margin-bottom: 0.5rem; display: block; }
     textarea {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #4b5563;
-        border-radius: 0.5rem;
-        background-color: #1f2937;
-        color: #f3f4f6;
-        font-size: 1rem;
-        resize: vertical;
-        min-height: 100px;
-        font-family: 'Inter', sans-serif;
+        width: 100%; padding: 0.75rem 1rem;
+        border: 1px solid #4b5563; border-radius: 0.5rem;
+        background-color: #1f2937; color: #f3f4f6; font-size: 1rem;
+        resize: vertical; min-height: 100px; font-family: 'Inter', sans-serif;
     }
-    button[type="submit"] {
+    button[type="submit"]{
         background: linear-gradient(90deg, #6366f1, #3b82f6);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 700;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: 0.3s ease;
-        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
-        align-self: flex-start;
+        color: white; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 700;
+        border: none; border-radius: 0.5rem; cursor: pointer; transition: 0.3s ease;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4); align-self: flex-start;
     }
-    button[type="submit"]:hover {
+    button[type="submit"]:hover{
         background: linear-gradient(90deg, #4f46e5, #2563eb);
         box-shadow: 0 0 16px rgba(99, 102, 241, 0.6);
     }
     @media (max-width: 640px) {
-        .form-section h2 {
-            font-size: 1.75rem;
-        }
+        .form-section h2 { font-size: 1.75rem; }
     }
+
+    /* ---- Success Modal ---- */
+    .modal-backdrop {
+        position: fixed; inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        display: none; /* shown via .show */
+        align-items: center; justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(2px);
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-card {
+        width: 100%;
+        max-width: 520px;
+        background: rgba(17, 24, 39, 0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 1.25rem;
+        padding: 1.75rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+        transform: translateY(10px) scale(0.98);
+        opacity: 0;
+        transition: transform .25s ease, opacity .25s ease;
+    }
+    .modal-backdrop.show .modal-card {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    .modal-title {
+        font-size: 1.5rem; font-weight: 800; color: #a7f3d0; /* emerald-ish */
+        margin-bottom: .5rem; text-shadow: 0 0 10px rgba(16, 185, 129, .4);
+    }
+    .modal-text { color: #d1fae5; line-height: 1.6; margin-bottom: 1.25rem; }
+    .modal-actions {
+        display: flex; gap: .75rem; justify-content: flex-end; margin-top: .5rem;
+    }
+    .btn {
+        padding: .6rem 1rem; border-radius: .6rem; border: 1px solid transparent;
+        font-weight: 700; cursor: pointer; transition: .2s ease;
+    }
+    .btn-primary {
+        background: linear-gradient(90deg, #10b981, #06b6d4);
+        color: white; box-shadow: 0 0 12px rgba(16,185,129,.35);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #059669, #0891b2);
+        box-shadow: 0 0 16px rgba(16,185,129,.55);
+    }
+    .btn-ghost {
+        background: transparent; color: #e5e7eb; border-color: rgba(229,231,235,.2);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.05); }
 </style>
 </head>
 <body>
@@ -90,53 +106,103 @@
 <div class="container">
     <div class="form-section">
         <h2>Candidate Questionnaire</h2>
-        <form action="{{ route('candidate.questionnaire.answers', [ 'application' => $application->id ]) }}" method="POST">
+        <form action="{{ route('candidate.questionnaire.answers', [ 'application' => $application->id ]) }}" method="POST" id="questionnaireForm">
             @csrf
             <div>
                 <label for="q1">1. Can you briefly tell us about yourself and your background?</label>
-                <textarea id="q1" name="answers[q1]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q1" name="answers[q1]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q1 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q2">2. Why are you interested in this position?</label>
-                <textarea id="q2" name="answers[q2]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q2" name="answers[q2]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q2 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q3">3. What are your strengths and weaknesses?</label>
-                <textarea id="q3" name="answers[q3]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q3" name="answers[q3]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q3 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q4">4. How do you handle stress or pressure at work?</label>
-                <textarea id="q4" name="answers[q4]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q4" name="answers[q4]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q4 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q5">5. How do you prioritize tasks when working on multiple projects?</label>
-                <textarea id="q5" name="answers[q5]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q5" name="answers[q5]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q5 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q6">6. Describe a time when you had a conflict with a colleague. How did you resolve it?</label>
-                <textarea id="q6" name="answers[q6]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q6" name="answers[q6]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q6 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q7">7. What motivates you in your professional life?</label>
-                <textarea id="q7" name="answers[q7]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q7" name="answers[q7]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q7 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q8">8. Are you more comfortable working independently or in a team?</label>
-                <textarea id="q8" name="answers[q8]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q8" name="answers[q8]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q8 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q9">9. What are your career goals over the next 2–5 years?</label>
-                <textarea id="q9" name="answers[q9]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q9" name="answers[q9]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q9 ?? "" }}</textarea>
             </div>
             <div>
                 <label for="q10">10. Why are you leaving (or did you leave) your previous job?</label>
-                <textarea id="q10" name="answers[q10]" required maxlength="1000" placeholder="Write your answer here..."></textarea>
+                <textarea id="q10" name="answers[q10]" required maxlength="1000" placeholder="Write your answer here...">{{ $answers?->q10 ?? "" }}</textarea>
             </div>
 
-            <button type="submit">🚀 Submit Questionnaire</button>
+            <button type="submit" id="submitBtn">🚀 Submit Questionnaire</button>
         </form>
     </div>
 </div>
+
+<!-- Success Modal -->
+<div class="modal-backdrop" id="successModal" aria-hidden="true" role="dialog" aria-labelledby="successTitle" aria-modal="true">
+    <div class="modal-card">
+        <h3 class="modal-title" id="successTitle">✅ Submitted Successfully</h3>
+        <p class="modal-text" id="successText">
+            Your questionnaire has been received. Our team will review your responses and get back to you soon.
+        </p>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" id="closeModalBtn">Close</button>
+            <a href="{{ url()->current() }}" class="btn btn-primary">OK</a>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Optional: prevent double submission UX
+    const form = document.getElementById('questionnaireForm');
+    const submitBtn = document.getElementById('submitBtn');
+    if (form && submitBtn) {
+        form.addEventListener('submit', function () {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        });
+    }
+
+    // Show modal only if Laravel flashed a success message
+    const hasSuccess = {{ session('success') ? 'true' : 'false' }};
+    const successText = @json(session('success') ?? 'Your questionnaire was submitted successfully!');
+    const modal = document.getElementById('successModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+
+    if (hasSuccess && modal) {
+        modal.classList.add('show');
+        // Update the text from server message
+        const textNode = document.getElementById('successText');
+        if (textNode) textNode.textContent = successText;
+
+        // Close handlers
+        closeBtn?.addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('show');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') modal.classList.remove('show');
+        });
+    }
+})();
+</script>
 
 </body>
 </html>
